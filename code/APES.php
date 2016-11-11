@@ -229,6 +229,14 @@ class APES extends DataExtension
             return;
         }
 
+        //Only update MailChimp user if firstname, surname, or email has changed to prevent spamming api requests to MailChimp on every write.
+        if (!( (isset($changed['FirstName']) && $changed['FirstName'] != $this->owner->FirstName)
+            || (isset($changed['Surname']) && $changed['Surname'] != $this->owner->Surname)
+            || (isset($changed['Email'])) && $changed['Email'] != $this->owner->FirstName)
+        ) {
+            return;
+        }        
+
         // Only update members which are subscribed
         if (!$this->isSubscribed()) {
             return;
