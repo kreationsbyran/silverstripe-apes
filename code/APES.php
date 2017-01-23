@@ -223,19 +223,16 @@ class APES extends DataExtension
     public function onBeforeWrite()
     {
         
-        // Only update ID if this record has been changed
-        $changed = $this->owner->getChangedFields();
-        if (empty($changed) && $this->owner->exists()) {
-            return;
+        $syncFields = array_keys($this->owner->config()->sync_member_fields);
+        $matches    = [0];
+
+        foreach ($syncFields as $field) {
+            $matches[] = isset($changed[$field]);
         }
 
-        //Only update MailChimp user if firstname, surname, or email has changed to prevent spamming api requests to MailChimp on every write.
-        if (!( (isset($changed['FirstName']) && $changed['FirstName'] != $this->owner->FirstName)
-            || (isset($changed['Surname']) && $changed['Surname'] != $this->owner->Surname)
-            || (isset($changed['Email'])) && $changed['Email'] != $this->owner->FirstName)
-        ) {
+        if (!max($matches)) {
             return;
-        }        
+        }     
 
         // Only update members which are subscribed
         if (!$this->isSubscribed()) {
